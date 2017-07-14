@@ -217,11 +217,10 @@ class FlasherMbed(object):
                             aux_source = f.read()
                             self.logger.debug("SHA1: %s" % hashlib.sha1(aux_source).hexdigest())
                         source_with_path = '"' + os.path.abspath(source) + '"'
-                        self.logger.debug("copying file: %s to %s" % (source_with_path, destination))
+                        #self.logger.debug("copying file: %s to %s" % (source_with_path, destination))
                         copy_cmd = "copy %s %s" % (source_with_path, destination)
-                        self.logger.debug("COMMAND: %s" % copy_cmd)
+                        self.logger.debug("copying file, command: %s" % copy_cmd)
                         os.system(copy_cmd)
-                        #os.system("copy %s %s" % (os.path.abspath(source), destination))
                     else:
                         self.logger.debug('read source file')
                         with open(source, 'rb') as f:
