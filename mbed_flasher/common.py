@@ -17,7 +17,9 @@ limitations under the License.
 import logging
 
 class Logger(object):
-
+    """
+    Logger provider
+    """
     def __init__(self, name):
         self.logger = logging.getLogger(name)
         if len(self.logger.handlers) == 0:
@@ -26,5 +28,5 @@ class Logger(object):
             self.logger.propagate = False
             self.logger.info('No logger supplied, using default logging logger')
 
-    def __call__(self, name):    
+    def __call__(self, name):
         return self.logger
