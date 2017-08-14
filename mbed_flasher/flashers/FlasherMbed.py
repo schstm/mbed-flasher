@@ -86,10 +86,8 @@ class FlasherMbed(object):
                 self.logger.info("reset failed")
         port.close()
 
-
-    # no need to use self
-    # pylint: disable=no-self-use
-    def auxiliary_drive_check(self, drive):
+    @staticmethod
+    def auxiliary_drive_check(drive):
         """
         Check if auxiliary drive exists
         """
