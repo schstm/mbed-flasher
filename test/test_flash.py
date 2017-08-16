@@ -59,8 +59,6 @@ class FlashTestCase(unittest.TestCase):
                             method='simple')
         self.assertEqual(ret, 45)
 
-    # test with name longer than 30, disable the warning here
-    # pylint: disable=invalid-name
     @unittest.skipIf(mbeds.list_mbeds() != [], "hardware attached")
     def test_run_with_file_with_target_id_all(self):
         """
@@ -74,8 +72,6 @@ class FlashTestCase(unittest.TestCase):
                             method='simple')
         self.assertEqual(ret, 40)
 
-    # test with name longer than 30, disable the warning here
-    # pylint: disable=invalid-name
     @unittest.skipIf(mbeds.list_mbeds() != [], "hardware attached")
     def test_run_with_file_with_one_target_id(self):
         """
@@ -89,8 +85,6 @@ class FlashTestCase(unittest.TestCase):
                             method='simple')
         self.assertEqual(ret, 55)
 
-    # test with name longer than 30, disable the warning here
-    # pylint: disable=invalid-name
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
     def test_run_with_file_with_one_target_id_wrong_platform(self):
         """
