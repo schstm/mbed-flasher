@@ -140,7 +140,6 @@ class Erase(object):
                 pass
             auto_thread = Thread(target=self.runner, args=([mount_point, 'ERASE.ACT'],))
             auto_thread.start()
-            auto_thread.start()
             while auto_thread.is_alive():
                 auto_thread.join(0.5)
             if not no_reset:
