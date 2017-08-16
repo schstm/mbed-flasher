@@ -31,15 +31,15 @@ EXIT_CODE_TARGET_ID_MISSING = 15
 class Reset(object):
     """ Reset object, which manages reset for given devices
     """
-    FLASHERS = []
+    _flashers = []
     def __init__(self):
         logger = Logger('mbed-flasher')
         self.logger = logger.logger
-        self.FLASHERS = self.__get_flashers()
+        self._flashers = self.__get_flashers()
 
     def get_available_device_mapping(self):
         available_devices = []
-        for Flasher in self.FLASHERS:
+        for Flasher in self._flashers:
             devices = Flasher.get_available_devices()
             available_devices.extend(devices)
         return available_devices

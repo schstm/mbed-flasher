@@ -44,14 +44,14 @@ class Erase(object):
     def __init__(self):
         logger = Logger('mbed-flasher')
         self.logger = logger.logger
-        self.flasers = self.__get_flashers()
+        self.flashers = self.__get_flashers()
 
     def get_available_device_mapping(self):
         """
         :return: list of available devices
         """
         available_devices = []
-        for flasher in self.flasers:
+        for flasher in self.flashers:
             devices = flasher.get_available_devices()
             available_devices.extend(devices)
         return available_devices
@@ -122,7 +122,7 @@ class Erase(object):
         """
         :param mount_point: mount point
         :param serial_port: serial port
-        :param no_reset: earse with/without reset
+        :param no_reset: erase with/without reset
         :return: exit code
         """
         automation_activated = False
@@ -138,10 +138,11 @@ class Erase(object):
             self.logger.info("erasing device")
             with open(join(mount_point, 'ERASE.ACT'), 'wb'):
                 pass
-            thread = Thread(target=self.runner, args=([mount_point, 'ERASE.ACT'],))
-            thread.start()
-            while thread.is_alive():
-                thread.join(0.5)
+            auto_thread = Thread(target=self.runner, args=([mount_point, 'ERASE.ACT'],))
+            auto_thread.start()
+            auto_thread.start()
+            while auto_thread.is_alive():
+                auto_thread.join(0.5)
             if not no_reset:
                 success = self.reset_board(serial_port)
                 if success != 0:
