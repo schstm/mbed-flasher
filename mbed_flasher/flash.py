@@ -94,6 +94,7 @@ class Flash(object):
             available_devices.extend(devices)
         return available_devices
 
+    # Todo improve logic
     def __get_flasher(self, platform_name):
         """
         :param platform_name: platform name
