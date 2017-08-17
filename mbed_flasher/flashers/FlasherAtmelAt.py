@@ -114,7 +114,8 @@ class FlasherAtmelAt(object):
         with tempfile.TemporaryFile() as temp:
             temp.write(source)
             temp.close()
-            # TODO: this statement has no effect?
+            # statement below has effect
+            # pylint: disable=pointless-statement
             temp.name
             # actual flash procedure
 

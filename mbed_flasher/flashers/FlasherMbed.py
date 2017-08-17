@@ -128,6 +128,7 @@ class FlasherMbed(object):
                 self.logger.debug("re-mount check timed out for %s", drive[0])
                 break
 
+    # Todo: the code here might need improvement
     # pylint: disable=too-many-branches
     def check_points_unchanged(self, target):
         """
@@ -138,54 +139,60 @@ class FlasherMbed(object):
             mbeds = mbed_lstools.create()
             if target['serial_port'] != mbeds.get_mbed_com_port(target['target_id']):
                 new_target['serial_port'] = mbeds.get_mbed_com_port(target['target_id'])
-        # confusing pylint warning, no nested blocks in next line
-        # # pylint: disable=too-many-nested-blocks
-        elif platform.system() == 'Darwin':
-            pass
-        else:
-            for line in os.popen('ls -oA /dev/serial/by-id/').read().splitlines():
-                if line.find(target['target_id']) != -1:
-                    if target['serial_port'].split('/')[-1] != line.split('/')[-1]:
-                        if 'serial_port' not in new_target:
-                            new_target['serial_port'] = '/dev/' + line.split('/')[-1]
-                        else:
-                            self.logger.error('target_id %s has more than 1 '
-                                              'serial port in the system',
-                                              target['target_id'])
-                            return -10
-            dev_points = []
-            for dev_line in os.popen('ls -oA /dev/disk/by-id/').read().splitlines():
-                if dev_line.find(target['target_id']) != -1:
-                    if 'dev_point' not in new_target:
-                        new_target['dev_point'] = '/dev/' + dev_line.split('/')[-1]
-                    else:
-                        self.logger.error("target_id %s has more than 1 "
-                                          "device point in the system",
-                                          target['target_id'])
-                        return -11
-            if dev_points:
-                for _ in range(10):
-                    for_break = False
-                    mounts = os.popen('mount |grep vfat').read().splitlines()
-                    for mount in mounts:
-                        if mount.find(new_target['dev_point']) != -1:
-                            if target['mount_point'] == \
-                                    mount.split('on')[1].split('type')[0].strip():
-                                for_break = True
-                                break
-                            else:
-                                new_target['mount_point'] = \
-                                    mount.split('on')[1].split('type')[0].strip()
-                                for_break = True
-                                break
-                        sleep(1)
-                    if for_break:
-                        break
-                else:
-                    self.logger.error("vfat mount point for %s did not re-appear in "
-                                      "the system in 10 seconds", target['target_id'])
-                    return -12
 
+            self.get_target(new_target, target)
+
+        if platform.system() == 'Darwin':
+            self.get_target(new_target, target)
+
+        for line in os.popen('ls -oA /dev/serial/by-id/').read().splitlines():
+            if line.find(target['target_id']) != -1 \
+                    and target['serial_port'].split('/')[-1] != line.split('/')[-1]:
+                if 'serial_port' not in new_target:
+                    new_target['serial_port'] = '/dev/' + line.split('/')[-1]
+                else:
+                    self.logger.error('target_id %s has more than 1 '
+                                      'serial port in the system',
+                                      target['target_id'])
+                    return -10
+
+        dev_points = []
+        for dev_line in os.popen('ls -oA /dev/disk/by-id/').read().splitlines():
+            if dev_line.find(target['target_id']) != -1:
+                if 'dev_point' not in new_target:
+                    new_target['dev_point'] = '/dev/' + dev_line.split('/')[-1]
+                else:
+                    self.logger.error("target_id %s has more than 1 "
+                                      "device point in the system",
+                                      target['target_id'])
+                    return -11
+
+        if dev_points:
+            for _ in range(10):
+                for_break = False
+                mounts = os.popen('mount |grep vfat').read().splitlines()
+                for mount in mounts:
+                    if mount.find(new_target['dev_point']) != -1:
+                        if target['mount_point'] == \
+                                    mount.split('on')[1].split('type')[0].strip():
+                            for_break = True
+                            break
+                        else:
+                            new_target['mount_point'] = \
+                                mount.split('on')[1].split('type')[0].strip()
+                            for_break = True
+                            break
+                    sleep(1)
+                if for_break:
+                    break
+            else:
+                self.logger.error("vfat mount point for %s did not re-appear in "
+                                  "the system in 10 seconds", target['target_id'])
+                return -12
+
+        self.get_target(new_target, target)
+
+    def get_target(self, new_target, target):
         if new_target:
             if 'serial_port' in new_target:
                 self.logger.debug("serial port %s has changed to %s",
@@ -204,6 +211,7 @@ class FlasherMbed(object):
         else:
             return target
 
+    # Todo: the logic here needs improvements
     def flash(self, source, target, method, no_reset):
         """copy file to the destination
         :param source: binary to be flashed
@@ -220,6 +228,7 @@ class FlasherMbed(object):
                 # pylint: disable=superfluous-parens
                 print('pyOCD missing, install\n')
                 return -8
+
         if method == 'edbg':
             self.logger.debug("edbg is not supported for Mbed devices")
             return -13

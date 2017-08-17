@@ -19,7 +19,7 @@ from serial import Serial, SerialException, SerialTimeoutException
 
 class EnhancedSerial(Serial): # pylint: disable=too-many-ancestors
     '''
-    Enhancedserial module
+    EnhancedSerial module
     '''
     def __init__(self, *args, **kwargs):
         # ensure that a reasonable timeout is set
@@ -48,7 +48,6 @@ class EnhancedSerial(Serial): # pylint: disable=too-many-ancestors
                 version = 3.0   # We will assume you've got latest (3.0+)
         return version
 
-    # Todo: same file in clitest
     def safe_send_break(self):
         """! Closure for pyserial version dependant API calls
         """
