@@ -115,8 +115,8 @@ class FlasherCLI(object):
         for root, _, files in os.walk('logs/'):
             for name in files:
                 if str(name).find('_mbed-flasher.txt') != -1:
-                    if old_logs > time.mktime(time.strptime(str(name).split('_')[0],
-                                                            "%Y%m%d-%H%M%S")):
+                    if old_logs > time.mktime(
+                            time.strptime(str(name).split('_')[0], "%Y%m%d-%H%M%S")):
                         files_to_be_removed.append(str(os.path.join(root, name)))
                 elif str(name).find('mbed-flasher.log') != -1:
                     files_to_be_removed.append(str(os.path.join(root, name)))
@@ -317,23 +317,28 @@ class FlasherCLI(object):
             print("Could not find any connected device")
             return EXIT_CODE_DEVICES_MISSING
 
+        # Todo lint fix
         for device in available:
             available_target_ids.append(device['target_id'])
             if isinstance(args.tid, list):
                 for item in args.tid:
-                    if device['target_id'] == item or device['target_id'].startswith(item):
+                    if device['target_id'] == item \
+                            or device['target_id'].startswith(item):
                         if device['target_id'] not in target_ids_to_flash:
                             target_ids_to_flash.append(device['target_id'])
 
-                        if 'platform_name' in device and device['platform_name'] not in available_platforms:
+                        if 'platform_name' in device \
+                                and device['platform_name'] not in available_platforms:
                             available_platforms.append(device['platform_name'])
 
             else:
-                if device['target_id'] == args.tid or device['target_id'].startswith(args.tid):
+                if device['target_id'] == args.tid \
+                        or device['target_id'].startswith(args.tid):
                     if device['target_id'] not in target_ids_to_flash:
                         target_ids_to_flash.append(device['target_id'])
 
-                    if 'platform_name' in device and device['platform_name'] not in available_platforms:
+                    if 'platform_name' in device \
+                            and device['platform_name'] not in available_platforms:
                         available_platforms.append(device['platform_name'])
 
         if len(target_ids_to_flash) == 0:
