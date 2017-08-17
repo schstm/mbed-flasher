@@ -140,10 +140,10 @@ class FlasherMbed(object):
             if target['serial_port'] != mbeds.get_mbed_com_port(target['target_id']):
                 new_target['serial_port'] = mbeds.get_mbed_com_port(target['target_id'])
 
-            self.get_target(new_target, target)
+            return self.get_target(new_target=new_target, target=target)
 
         if platform.system() == 'Darwin':
-            self.get_target(new_target, target)
+            return self.get_target(new_target, target)
 
         for line in os.popen('ls -oA /dev/serial/by-id/').read().splitlines():
             if line.find(target['target_id']) != -1 \
@@ -190,7 +190,7 @@ class FlasherMbed(object):
                                   "the system in 10 seconds", target['target_id'])
                 return -12
 
-        self.get_target(new_target, target)
+        return self.get_target(new_target, target)
 
     def get_target(self, new_target, target):
         if new_target:
