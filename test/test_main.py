@@ -37,6 +37,8 @@ class MainTestCase(unittest.TestCase):
         mock_logging = self.logging_patcher.start()
         mock_logging.getLogger = \
             mock.MagicMock(return_value=mock.Mock(spec=logging.Logger))
+        # Mock logging
+        # pylint: disable=no-member
         mock_logging.disable(logging.CRITICAL)
 
     def tearDown(self):

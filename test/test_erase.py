@@ -60,15 +60,13 @@ class EraseTestCase(unittest.TestCase):
                              'Could not map given target_id(s) to available devices\n')
 
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
-    @mock.patch('sys.stdout', new_callable=StringIO)
-    def test_erase_with_all(self, mock_stdout):
+    def test_erase_with_all(self):
         eraser = Erase()
         ret = eraser.erase(target_id='all', method='simple')
         self.assertEqual(ret, 0)
 
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
-    @mock.patch('sys.stdout', new_callable=StringIO)
-    def test_erase_with_target_id(self, mock_stdout):
+    def test_erase_with_target_id(self):
         mbeds = mbed_lstools.create()
         devices = mbeds.list_mbeds()
         eraser = Erase()
@@ -82,8 +80,7 @@ class EraseTestCase(unittest.TestCase):
     # test func name is larger than 30, but is meaningful
     # pylint: disable=invalid-name
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
-    @mock.patch('sys.stdout', new_callable=StringIO)
-    def test_erase_with_target_id_no_reset(self, mock_stdout):
+    def test_erase_with_target_id_no_reset(self):
         mbeds = mbed_lstools.create()
         devices = mbeds.list_mbeds()
         eraser = Erase()
@@ -97,8 +94,7 @@ class EraseTestCase(unittest.TestCase):
         self.assertEqual(ret, 0)
 
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
-    @mock.patch('sys.stdout', new_callable=StringIO)
-    def test_erase_with_target_id_list(self, mock_stdout):
+    def test_erase_with_target_id_list(self):
         mbeds = mbed_lstools.create()
         devices = mbeds.list_mbeds()
         eraser = Erase()

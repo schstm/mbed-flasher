@@ -90,7 +90,7 @@ class Reset(object):
                 return EXIT_CODE_SERIAL_RESET_FAILED
         port.close()
 
-    #
+    # Todo code improvement
     # pylint: disable=too-many-nested-blocks, too-many-branches
     def reset(self, target_id=None, method=None):
         """Reset (mbed) device

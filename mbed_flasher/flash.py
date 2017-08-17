@@ -17,6 +17,7 @@ limitations under the License.
 from os.path import isfile
 import platform
 from mbed_flasher.common import Logger
+from mbed_flasher.flashers import AvailableFlashers
 
 EXIT_CODE_NO_PLATFORM_GIVEN = 35
 EXIT_CODE_COULD_NOT_MAP_TARGET_ID_TO_DEVICE = 40
@@ -68,7 +69,6 @@ class Flash(object):
         """
         :return: list of available flashers
         """
-        from mbed_flasher.flashers import AvailableFlashers
         return AvailableFlashers
 
     # Todo improve logic
@@ -78,7 +78,6 @@ class Flash(object):
         :param flasher: None, if not given a flasher
         :return: return available flasher if found, otherwise return exit code
         """
-        from mbed_flasher.flashers import AvailableFlashers
         for available_flasher in AvailableFlashers:
             if available_flasher.name.lower() == flasher.lower():
                 return available_flasher
@@ -104,9 +103,8 @@ class Flash(object):
         if platform_name not in self.supported_targets:
             raise NotImplementedError("Flashing %s is not supported" % platform_name)
 
-        for flasher in self._flashers:
-            if platform_name in self.supported_targets:
-                return flasher()
+        if len(self._flashers) > 0 and platform_name in self.supported_targets:
+            return self._flashers[0]()
 
         raise Exception("oh nou")
 
@@ -131,6 +129,7 @@ class Flash(object):
                 return target
         raise KeyError("platform_name: %s not found" % platform_name)
 
+    # Todo code improvement
     # pylint: disable=too-many-nested-blocks, too-many-branches
     def flash_multiple(self, build, platform_name,
                        method='simple', target_ids_or_prefix='', no_reset=None):

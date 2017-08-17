@@ -153,7 +153,7 @@ class Erase(object):
             print("Selected device does not support erasing through DAPLINK")
             return EXIT_CODE_IMPLEMENTATION_MISSING
 
-    #
+    # Todo code improvement
     # pylint: disable=too-many-branches, too-many-nested-blocks
     def erase(self, target_id=None, no_reset=None, method=None):
         """
