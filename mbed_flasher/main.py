@@ -288,6 +288,7 @@ class FlasherCLI(object):
         available = flasher.get_available_device_mapping()
         target_ids_to_flash = []
         available_target_ids = []
+        retcode = 0
         #print(args)
         if args.input:
             if not isfile(args.input):
@@ -316,48 +317,45 @@ class FlasherCLI(object):
             print("Could not find any connected device")
             return EXIT_CODE_DEVICES_MISSING
 
-        # Todo: refactoring
-        if isinstance(args.tid, list):
-            for item in args.tid:
-                for device in available:
-                    available_target_ids.append(device['target_id'])
-                    if device['target_id'] == item or \
-                            device['target_id'].startswith(item):
+        for device in available:
+            available_target_ids.append(device['target_id'])
+            if isinstance(args.tid, list):
+                for item in args.tid:
+                    if device['target_id'] == item or device['target_id'].startswith(item):
                         if device['target_id'] not in target_ids_to_flash:
-                            if 'platform_name' in device:
-                                if device['platform_name'] not in available_platforms:
-                                    available_platforms.append(device['platform_name'])
                             target_ids_to_flash.append(device['target_id'])
-        else:
-            for device in available:
-                available_target_ids.append(device['target_id'])
-                if device['target_id'] == \
-                        args.tid or device['target_id'].startswith(args.tid):
+
+                        if 'platform_name' in device and device['platform_name'] not in available_platforms:
+                            available_platforms.append(device['platform_name'])
+
+            else:
+                if device['target_id'] == args.tid or device['target_id'].startswith(args.tid):
                     if device['target_id'] not in target_ids_to_flash:
-                        if 'platform_name' in device:
-                            if device['platform_name'] not in available_platforms:
-                                available_platforms.append(device['platform_name'])
                         target_ids_to_flash.append(device['target_id'])
+
+                    if 'platform_name' in device and device['platform_name'] not in available_platforms:
+                        available_platforms.append(device['platform_name'])
+
         if len(target_ids_to_flash) == 0:
             print("Could not find given target_id from attached devices")
             print("Available target_ids:")
             print(available_target_ids)
             return EXIT_CODE_COULD_NOT_MAP_DEVICE
+
+        elif len(available_platforms) > 1:
+            if not args.platform_name:
+                print("More than one platform detected for given target_id")
+                print("Please specify the platform with -t <PLATFORM_NAME>")
+                print("Found platforms:")
+                print(available_platforms)
+                return EXIT_CODE_PLATFORM_REQUIRED
         else:
-            if len(available_platforms) > 1:
-                if not args.platform_name:
-                    print("More than one platform detected for given target_id")
-                    print("Please specify the platform with -t <PLATFORM_NAME>")
-                    print("Found platforms:")
-                    print(available_platforms)
-                    return EXIT_CODE_PLATFORM_REQUIRED
-            else:
-                #print(target_ids_to_flash)
-                retcode = flasher.flash(build=args.input,
-                                        target_id=target_ids_to_flash,
-                                        platform_name=available_platforms[0],
-                                        method=args.method,
-                                        no_reset=args.no_reset)
+            #print(target_ids_to_flash)
+            retcode = flasher.flash(build=args.input,
+                                    target_id=target_ids_to_flash,
+                                    platform_name=available_platforms[0],
+                                    method=args.method,
+                                    no_reset=args.no_reset)
 
         return retcode
 
