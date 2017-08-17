@@ -120,8 +120,6 @@ class FlasherCLI(object):
                         files_to_be_removed.append(str(os.path.join(root, name)))
                 elif str(name).find('mbed-flasher.log') != -1:
                     files_to_be_removed.append(str(os.path.join(root, name)))
-                else:
-                    pass
 
         if files_to_be_removed:
             for filename in files_to_be_removed:
@@ -318,6 +316,7 @@ class FlasherCLI(object):
             print("Could not find any connected device")
             return EXIT_CODE_DEVICES_MISSING
 
+        # Todo: refactoring
         if isinstance(args.tid, list):
             for item in args.tid:
                 for device in available:

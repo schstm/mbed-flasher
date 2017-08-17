@@ -59,7 +59,7 @@ class Erase(object):
     @staticmethod
     def __get_flashers():
         """
-        :return: list of avaliable flashers
+        :return: list of available flashers
         """
         from mbed_flasher.flashers import AvailableFlashers
         return AvailableFlashers

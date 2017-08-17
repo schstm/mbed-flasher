@@ -71,6 +71,7 @@ class Flash(object):
         from mbed_flasher.flashers import AvailableFlashers
         return AvailableFlashers
 
+    # Todo improve logic
     @staticmethod
     def get_flasher(flasher=None):
         """
@@ -103,10 +104,9 @@ class Flash(object):
         if platform_name not in self.supported_targets:
             raise NotImplementedError("Flashing %s is not supported" % platform_name)
 
-        # pylint: disable=invalid-name
-        for Flasher in self._flashers:
+        for flasher in self._flashers:
             if platform_name in self.supported_targets:
-                return Flasher()
+                return flasher()
 
         raise Exception("oh nou")
 

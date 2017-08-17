@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+# pylint:disable=missing-docstring
 
 import logging
 import unittest
@@ -35,18 +36,12 @@ class EraseTestCase(unittest.TestCase):
         pass
 
     def test_erase_with_none(self):
-        """
-        test erase with no target
-        """
         eraser = Erase()
         ret = eraser.erase(target_id=None, method='simple')
         self.assertEqual(ret, 34)
 
     @mock.patch('sys.stdout', new_callable=StringIO)
     def test_erase_with_wrong_target_id(self, mock_stdout):
-        """
-        test erase with wrong target id
-        """
         eraser = Erase()
         ret = eraser.erase(target_id='555', method='simple')
         self.assertEqual(ret, 21)
@@ -57,9 +52,6 @@ class EraseTestCase(unittest.TestCase):
     @unittest.skipIf(mbeds.list_mbeds() != [], "hardware attached")
     @mock.patch('sys.stdout', new_callable=StringIO)
     def test_erase_with_all_no_devices(self, mock_stdout):
-        """
-        test erase with all no devices
-        """
         eraser = Erase()
         ret = eraser.erase(target_id='all', method='simple')
         self.assertEqual(ret, 21)
@@ -69,20 +61,14 @@ class EraseTestCase(unittest.TestCase):
 
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
     @mock.patch('sys.stdout', new_callable=StringIO)
-    def test_erase_with_all(self):
-        """
-        test erase with target id 'all'
-        """
+    def test_erase_with_all(self, mock_stdout):
         eraser = Erase()
         ret = eraser.erase(target_id='all', method='simple')
         self.assertEqual(ret, 0)
 
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
     @mock.patch('sys.stdout', new_callable=StringIO)
-    def test_erase_with_target_id(self):
-        """
-        test erase with target id
-        """
+    def test_erase_with_target_id(self, mock_stdout):
         mbeds = mbed_lstools.create()
         devices = mbeds.list_mbeds()
         eraser = Erase()
@@ -97,10 +83,7 @@ class EraseTestCase(unittest.TestCase):
     # pylint: disable=invalid-name
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
     @mock.patch('sys.stdout', new_callable=StringIO)
-    def test_erase_with_target_id_no_reset(self):
-        """
-        test erase with target id but no reset
-        """
+    def test_erase_with_target_id_no_reset(self, mock_stdout):
         mbeds = mbed_lstools.create()
         devices = mbeds.list_mbeds()
         eraser = Erase()
@@ -115,10 +98,7 @@ class EraseTestCase(unittest.TestCase):
 
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
     @mock.patch('sys.stdout', new_callable=StringIO)
-    def test_erase_with_target_id_list(self):
-        """
-        test erase with list of target id
-        """
+    def test_erase_with_target_id_list(self, mock_stdout):
         mbeds = mbed_lstools.create()
         devices = mbeds.list_mbeds()
         eraser = Erase()

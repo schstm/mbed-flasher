@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+# pylint:disable=missing-docstring
 
 import logging
 import unittest
@@ -38,9 +39,6 @@ class FlashTestCase(unittest.TestCase):
         pass
 
     def test_run_file_does_not_exist(self):
-        """
-        test run file doesn't exist
-        """
         flasher = Flash()
         with self.assertRaises(SyntaxError) as context:
             flasher.flash(build='file.bin', target_id=None,
@@ -50,9 +48,6 @@ class FlashTestCase(unittest.TestCase):
     # test with name longer than 30, disable the warning here
     # pylint: disable=invalid-name
     def test_run_target_id_and_platform_missing(self):
-        """
-        test run without target id and platform name
-        """
         flasher = Flash()
         ret = flasher.flash(build='file.bin', target_id=True,
                             platform_name=False, device_mapping_table=None,
@@ -61,9 +56,6 @@ class FlashTestCase(unittest.TestCase):
 
     @unittest.skipIf(mbeds.list_mbeds() != [], "hardware attached")
     def test_run_with_file_with_target_id_all(self):
-        """
-        test tun with file and target id
-        """
         flasher = Flash()
         ret = flasher.flash(build='test/helloworld.bin',
                             target_id='all',
@@ -74,9 +66,6 @@ class FlashTestCase(unittest.TestCase):
 
     @unittest.skipIf(mbeds.list_mbeds() != [], "hardware attached")
     def test_run_with_file_with_one_target_id(self):
-        """
-        test run with file and only on target id
-        """
         flasher = Flash()
         ret = flasher.flash(build='test/helloworld.bin',
                             target_id='0240000029164e45002f0012706e0006f301000097969900',
@@ -87,9 +76,6 @@ class FlashTestCase(unittest.TestCase):
 
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
     def test_run_with_file_with_one_target_id_wrong_platform(self):
-        """
-        test run with file, one target_id and wrong platform name
-        """
         mbeds = mbed_lstools.create()
         targets = mbeds.list_mbeds()
         target_id = None
@@ -111,9 +97,6 @@ class FlashTestCase(unittest.TestCase):
 
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
     def test_hw_flash(self):
-        """
-        test hardware flash
-        """
         mbeds = mbed_lstools.create()
         targets = mbeds.list_mbeds()
         target_id = None
@@ -134,9 +117,6 @@ class FlashTestCase(unittest.TestCase):
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
     @mock.patch('sys.stdout', new_callable=StringIO)
     def test_run_with_file_with_all(self, mock_stdout):
-        """
-        test run with file and 'all' target id
-        """
         flasher = Flash()
         ret = flasher.flash(build='test/helloworld.bin',
                             target_id='all',
@@ -150,9 +130,6 @@ class FlashTestCase(unittest.TestCase):
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
     @mock.patch('sys.stdout', new_callable=StringIO)
     def test_run_with_file_with_prefix(self, mock_stdout):
-        """
-        test run with file and prefix
-        """
         flasher = Flash()
         ret = flasher.flash(build='test/helloworld.bin',
                             target_id='0',
@@ -166,9 +143,6 @@ class FlashTestCase(unittest.TestCase):
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
     @mock.patch('sys.stdout', new_callable=StringIO)
     def test_run_fail_file(self, mock_stdout):
-        """
-        test run with fail file
-        """
         mbeds = mbed_lstools.create()
         targets = mbeds.list_mbeds()
         mount_point = None
@@ -201,9 +175,6 @@ class FlashTestCase(unittest.TestCase):
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
     @mock.patch('sys.stdout', new_callable=StringIO)
     def test_run_fail_binary(self, mock_stdout):
-        """
-        test run with fail binary
-        """
         mbeds = mbed_lstools.create()
         targets = mbeds.list_mbeds()
         target_id = None
