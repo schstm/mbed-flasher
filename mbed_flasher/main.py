@@ -317,7 +317,7 @@ class FlasherCLI(object):
             print("Could not find any connected device")
             return EXIT_CODE_DEVICES_MISSING
 
-        # Todo lint fix
+
         for device in available:
             available_target_ids.append(device['target_id'])
             if isinstance(args.tid, list):
@@ -416,8 +416,6 @@ class FlasherCLI(object):
 
         return EXIT_CODE_SUCCESS
 
-    # args not used, but the logic to call sub cmd handler is passing two args
-    # pylint: disable=unused-argument
     def subcmd_list_platforms(self, args):
         """
         list platform command
@@ -426,8 +424,6 @@ class FlasherCLI(object):
         print(json.dumps(flasher.get_supported_targets()))
         return EXIT_CODE_SUCCESS
 
-    # args not used, but the logic to call sub cmd handler is passing two args
-    # pylint: disable=unused-argument
     def subcmd_list_flashers(self, args):
         """
         list flasher command handler

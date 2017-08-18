@@ -71,7 +71,6 @@ class Flash(object):
         """
         return AvailableFlashers
 
-    # Todo improve logic
     @staticmethod
     def get_flasher(flasher=None):
         """
@@ -94,7 +93,6 @@ class Flash(object):
             available_devices.extend(devices)
         return available_devices
 
-    # Todo improve logic
     def __get_flasher(self, platform_name):
         """
         :param platform_name: platform name
@@ -103,8 +101,8 @@ class Flash(object):
         if platform_name not in self.supported_targets:
             raise NotImplementedError("Flashing %s is not supported" % platform_name)
 
-        if len(self._flashers) > 0 and platform_name in self.supported_targets:
-            return self._flashers[0]()
+        for flasher in self._flashers:
+            return flasher()
 
         raise Exception("oh nou")
 
