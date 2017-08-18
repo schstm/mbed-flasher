@@ -90,8 +90,6 @@ class Reset(object):
                 return EXIT_CODE_SERIAL_RESET_FAILED
         port.close()
 
-    # Todo code improvement
-    # pylint: disable=too-many-nested-blocks, too-many-branches
     def reset(self, target_id=None, method=None):
         """Reset (mbed) device
         :param target_id: target_id
@@ -100,55 +98,72 @@ class Reset(object):
         self.logger.info("Starting reset for target_id %s", target_id)
         self.logger.info("Method for reset: %s", method)
         available_devices = self.get_available_device_mapping()
+
+        if target_id is None:
+            return EXIT_CODE_TARGET_ID_MISSING
+
+        targets_to_reset = self.prepare_target_to_reset(target_id, available_devices)
+
+        if len(targets_to_reset) <= 0:
+            print("Could not map given target_id(s) to available devices")
+            return EXIT_CODE_COULD_NOT_MAP_TO_DEVICE
+
+        for item in targets_to_reset:
+            if method == 'simple' and 'serial_port' in item:
+                self.reset_board(item['serial_port'])
+            elif method == 'pyocd':
+                return self.try_pyocd_reset(item)
+            elif method == 'edbg':
+                print("Not supported yet")
+            else:
+                print("Selected method %s not supported" % method)
+                return EXIT_CODE_NONSUPPORTED_METHOD_FOR_RESET
+
+        return EXIT_CODE_SUCCESS
+
+    @staticmethod
+    def prepare_target_to_reset(target_id, available_devices):
+        """
+        prepare target to reset
+        """
         targets_to_reset = []
 
-        if target_id is not None:
-            if isinstance(target_id, list):
-                for target in target_id:
-                    for device in available_devices:
-                        if target == device['target_id']:
-                            if device not in targets_to_reset:
-                                targets_to_reset.append(device)
-            else:
-                if target_id == 'all':
-                    targets_to_reset = available_devices
-                elif len(target_id) <= 48:
-                    for device in available_devices:
-                        if target_id == device['target_id'] or \
-                                device['target_id'].startswith(target_id):
-                            if device not in targets_to_reset:
-                                targets_to_reset.append(device)
-
-            if len(targets_to_reset) > 0:
-                for item in targets_to_reset:
-                    if method == 'simple' and 'serial_port' in item:
-                        self.reset_board(item['serial_port'])
-                    elif method == 'pyocd':
-                        try:
-                            from pyOCD.board import MbedBoard
-                        except ImportError:
-                            print('pyOCD missing, install it\n')
-                            return EXIT_CODE_PYOCD_MISSING
-                        try:
-                            with MbedBoard.chooseBoard(board_id=item["target_id"]) \
-                                    as board:
-                                self.logger.info("resetting device")
-                                ocd_target = board.target
-                                ocd_target.reset()
-                                self.logger.info("reset completed")
-                        except AttributeError as err:
-                            self.logger.error("reset failed: %s.", err)
-                            self.logger.error("tid=%s", item["target_id"])
-                            return EXIT_CODE_PYOCD_RESET_FAILED
-                    elif method == 'edbg':
-                        print("Not supported yet")
-                    else:
-                        print("Selected method %s not supported" % method)
-                        return EXIT_CODE_NONSUPPORTED_METHOD_FOR_RESET
-            else:
-                print("Could not map given target_id(s) to available devices")
-                return EXIT_CODE_COULD_NOT_MAP_TO_DEVICE
-
-            return EXIT_CODE_SUCCESS
+        if isinstance(target_id, list):
+            for target in target_id:
+                for device in available_devices:
+                    if target == device['target_id'] and \
+                                    device not in targets_to_reset:
+                        targets_to_reset.append(device)
         else:
-            return EXIT_CODE_TARGET_ID_MISSING
+            if target_id == 'all':
+                targets_to_reset = available_devices
+            elif len(target_id) <= 48:
+                for device in available_devices:
+                    if (target_id == device['target_id'] or
+                            device['target_id'].startswith(target_id)) and \
+                                    device not in targets_to_reset:
+                        targets_to_reset.append(device)
+        return targets_to_reset
+
+    def try_pyocd_reset(self, item):
+        """
+        try pyOCD reset
+        """
+        try:
+            from pyOCD.board import MbedBoard
+        except ImportError:
+            print('pyOCD missing, install it\n')
+            return EXIT_CODE_PYOCD_MISSING
+
+        try:
+            with MbedBoard.chooseBoard(board_id=item["target_id"]) \
+                    as board:
+                self.logger.info("resetting device")
+                ocd_target = board.target
+                ocd_target.reset()
+                self.logger.info("reset completed")
+            return EXIT_CODE_SUCCESS
+        except AttributeError as err:
+            self.logger.error("reset failed: %s.", err)
+            self.logger.error("tid=%s", item["target_id"])
+            return EXIT_CODE_PYOCD_RESET_FAILED
