@@ -278,7 +278,7 @@ class FlasherCLI(object):
         return operation_wrapper
 
     # Todo: might be improved later
-    # pylint: disable=too-many-nested-blocks, too-many-branches, no-self-use
+    # pylint: disable=too-many-branches, no-self-use
     @cli_decorator
     def subcmd_flash_handler(self, args):
         """
@@ -324,22 +324,16 @@ class FlasherCLI(object):
                 for item in args.tid:
                     if device['target_id'] == item \
                             or device['target_id'].startswith(item):
-                        if device['target_id'] not in target_ids_to_flash:
-                            target_ids_to_flash.append(device['target_id'])
-
-                        if 'platform_name' in device \
-                                and device['platform_name'] not in available_platforms:
-                            available_platforms.append(device['platform_name'])
+                        self.append_device(device,
+                                           target_ids_to_flash,
+                                           available_platforms)
 
             else:
                 if device['target_id'] == args.tid \
                         or device['target_id'].startswith(args.tid):
-                    if device['target_id'] not in target_ids_to_flash:
-                        target_ids_to_flash.append(device['target_id'])
-
-                    if 'platform_name' in device \
-                            and device['platform_name'] not in available_platforms:
-                        available_platforms.append(device['platform_name'])
+                    self.append_device(device,
+                                       target_ids_to_flash,
+                                       available_platforms)
 
         if len(target_ids_to_flash) == 0:
             print("Could not find given target_id from attached devices")
@@ -363,6 +357,17 @@ class FlasherCLI(object):
                                     no_reset=args.no_reset)
 
         return retcode
+
+    def append_device(self, device, target_ids_to_flash, available_platforms):
+        """
+        append device
+        """
+        if device['target_id'] not in target_ids_to_flash:
+            target_ids_to_flash.append(device['target_id'])
+
+        if 'platform_name' in device \
+                and device['platform_name'] not in available_platforms:
+            available_platforms.append(device['platform_name'])
 
     def subcmd_reset_handler(self, args):
         """
