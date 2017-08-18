@@ -128,7 +128,6 @@ class FlasherMbed(object):
                 self.logger.debug("re-mount check timed out for %s", drive[0])
                 break
 
-    # Todo: the code here might need improvement
     # pylint: disable=too-many-branches
     def check_points_unchanged(self, target):
         """
@@ -214,7 +213,6 @@ class FlasherMbed(object):
         else:
             return target
 
-    # Todo: the logic here needs improvements
     def flash(self, source, target, method, no_reset):
         """copy file to the destination
         :param source: binary to be flashed
