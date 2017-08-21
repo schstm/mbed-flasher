@@ -277,8 +277,6 @@ class FlasherCLI(object):
             return retcode
         return operation_wrapper
 
-    # Todo: might be improved later
-    # pylint: disable=too-many-branches, no-self-use
     @cli_decorator
     def subcmd_flash_handler(self, args):
         """
@@ -286,7 +284,6 @@ class FlasherCLI(object):
         """
         flasher = Flash()
         available = flasher.get_available_device_mapping()
-        target_ids_to_flash = []
         available_target_ids = []
         retcode = 0
         #print(args)
@@ -302,7 +299,6 @@ class FlasherCLI(object):
                 print("Not supported platform: %s" % args.platform_name)
                 print("Supported platforms: %s" % flasher.get_supported_targets())
                 return EXIT_CODE_NOT_SUPPORTED_PLATFORM
-        available_platforms = []
 
         if not args.tid:
             print("Target_id is missing")
@@ -317,23 +313,8 @@ class FlasherCLI(object):
             print("Could not find any connected device")
             return EXIT_CODE_DEVICES_MISSING
 
-
-        for device in available:
-            available_target_ids.append(device['target_id'])
-            if isinstance(args.tid, list):
-                for item in args.tid:
-                    if device['target_id'] == item \
-                            or device['target_id'].startswith(item):
-                        self.append_device(device,
-                                           target_ids_to_flash,
-                                           available_platforms)
-
-            else:
-                if device['target_id'] == args.tid \
-                        or device['target_id'].startswith(args.tid):
-                    self.append_device(device,
-                                       target_ids_to_flash,
-                                       available_platforms)
+        available_platforms, target_ids_to_flash = \
+            self.prepare_platforms_and_targets(available, args.tid, available_target_ids)
 
         if len(target_ids_to_flash) == 0:
             print("Could not find given target_id from attached devices")
@@ -358,16 +339,38 @@ class FlasherCLI(object):
 
         return retcode
 
-    def append_device(self, device, target_ids_to_flash, available_platforms):
+    @staticmethod
+    def prepare_platforms_and_targets(available, tid, available_target_ids):
         """
-        append device
+        prepare available platforms and target ids to flash
         """
-        if device['target_id'] not in target_ids_to_flash:
-            target_ids_to_flash.append(device['target_id'])
+        available_platforms = []
+        target_ids_to_flash = []
 
-        if 'platform_name' in device \
-                and device['platform_name'] not in available_platforms:
-            available_platforms.append(device['platform_name'])
+        for device in available:
+            available_target_ids.append(device['target_id'])
+            if isinstance(tid, list):
+                for item in tid:
+                    if device['target_id'] == item \
+                            or device['target_id'].startswith(item):
+                        if device['target_id'] not in target_ids_to_flash:
+                            target_ids_to_flash.append(device['target_id'])
+
+                        if 'platform_name' in device \
+                                and device['platform_name'] not in available_platforms:
+                            available_platforms.append(device['platform_name'])
+
+            else:
+                if device['target_id'] == tid \
+                        or device['target_id'].startswith(tid):
+                    if device['target_id'] not in target_ids_to_flash:
+                        target_ids_to_flash.append(device['target_id'])
+
+                    if 'platform_name' in device and \
+                                    device['platform_name'] not in available_platforms:
+                        available_platforms.append(device['platform_name'])
+
+        return available_platforms, target_ids_to_flash
 
     def subcmd_reset_handler(self, args):
         """
@@ -421,6 +424,7 @@ class FlasherCLI(object):
 
         return EXIT_CODE_SUCCESS
 
+    # pylint: disable=no-self-use
     def subcmd_list_platforms(self, args):
         """
         list platform command
