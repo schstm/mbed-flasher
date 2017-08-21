@@ -128,7 +128,67 @@ class FlasherMbed(object):
                 self.logger.debug("re-mount check timed out for %s", drive[0])
                 break
 
-    # pylint: disable=too-many-branches
+    def _check_serial_point_duplicates(self, target, new_target):
+        """
+        Verify that target is not listed multiple times in /dev/serial/by-id
+        :param target: old target
+        :param new_target: new target
+        :return: if all is well None, otherwise error code
+        """
+        for line in os.popen('ls -oA /dev/serial/by-id/').read().splitlines():
+            if line.find(target['target_id']) != -1 \
+                    and target['serial_port'].split('/')[-1] != line.split('/')[-1]:
+                if 'serial_port' not in new_target:
+                    new_target['serial_port'] = '/dev/' + line.split('/')[-1]
+                else:
+                    self.logger.error('target_id %s has more than 1 '
+                                      'serial port in the system',
+                                      target['target_id'])
+                    return -10
+
+    def _check_device_point_duplicates(self, target, new_target):
+        """
+        Verify that target is not listed multiple times in /dev/disk/by-id
+        :param target: old target
+        :param new_target: new target
+        :return: if all is well None, otherwise error code
+        """
+        for dev_line in os.popen('ls -oA /dev/disk/by-id/').read().splitlines():
+            if dev_line.find(target['target_id']) != -1:
+                if 'dev_point' not in new_target:
+                    new_target['dev_point'] = '/dev/' + dev_line.split('/')[-1]
+                else:
+                    self.logger.error("target_id %s has more than 1 "
+                                      "device point in the system",
+                                      target['target_id'])
+                    return -11
+
+    def _verify_mount_point(self, target, new_target):
+        """
+        Verify that if target has changed points a mount point can still be found for it
+        :param target: old target
+        :param new_target: new target
+        :return: if all is well None, otherwise error code
+        """
+        if not new_target:
+            return
+
+        if 'dev_point' not in new_target:
+            self.logger.error("Target %s is missing /dev/disk/by-id/ point", target['target_id'])
+            return -12
+
+        for _ in range(10):
+            mounts = os.popen('mount |grep vfat').read().splitlines()
+            for mount in mounts:
+                if mount.find(new_target['dev_point']) != -1:
+                    new_target['mount_point'] = mount.split('on')[1].split('type')[0].strip()
+                    return
+                sleep(1)
+
+        self.logger.error("vfat mount point for %s did not re-appear in "
+                          "the system in 10 seconds", target['target_id'])
+        return -12
+
     def check_points_unchanged(self, target):
         """
         Check if points are unchanged
@@ -144,50 +204,17 @@ class FlasherMbed(object):
         if platform.system() == 'Darwin':
             return self.get_target(new_target, target)
 
-        for line in os.popen('ls -oA /dev/serial/by-id/').read().splitlines():
-            if line.find(target['target_id']) != -1 \
-                    and target['serial_port'].split('/')[-1] != line.split('/')[-1]:
-                if 'serial_port' not in new_target:
-                    new_target['serial_port'] = '/dev/' + line.split('/')[-1]
-                else:
-                    self.logger.error('target_id %s has more than 1 '
-                                      'serial port in the system',
-                                      target['target_id'])
-                    return -10
+        return_code = self._check_serial_point_duplicates(target=target, new_target=new_target)
+        if return_code:
+            return return_code
 
-        dev_points = []
-        for dev_line in os.popen('ls -oA /dev/disk/by-id/').read().splitlines():
-            if dev_line.find(target['target_id']) != -1:
-                if 'dev_point' not in new_target:
-                    new_target['dev_point'] = '/dev/' + dev_line.split('/')[-1]
-                else:
-                    self.logger.error("target_id %s has more than 1 "
-                                      "device point in the system",
-                                      target['target_id'])
-                    return -11
+        return_code = self._check_device_point_duplicates(target=target, new_target=new_target)
+        if return_code:
+            return return_code
 
-        if dev_points:
-            for _ in range(10):
-                for_break = False
-                mounts = os.popen('mount |grep vfat').read().splitlines()
-                for mount in mounts:
-                    if mount.find(new_target['dev_point']) != -1:
-                        if target['mount_point'] == \
-                                    mount.split('on')[1].split('type')[0].strip():
-                            for_break = True
-                            break
-                        else:
-                            new_target['mount_point'] = \
-                                mount.split('on')[1].split('type')[0].strip()
-                            for_break = True
-                            break
-                    sleep(1)
-                if for_break:
-                    break
-            else:
-                self.logger.error("vfat mount point for %s did not re-appear in "
-                                  "the system in 10 seconds", target['target_id'])
-                return -12
+        return_code = self._verify_mount_point(target=target, new_target=new_target)
+        if return_code:
+            return return_code
 
         return self.get_target(new_target, target)
 
