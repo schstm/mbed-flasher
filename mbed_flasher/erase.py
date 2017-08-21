@@ -153,8 +153,6 @@ class Erase(object):
             print("Selected device does not support erasing through DAPLINK")
             return EXIT_CODE_IMPLEMENTATION_MISSING
 
-    # Todo code improvement
-    # pylint: disable=too-many-branches, too-many-nested-blocks
     def erase(self, target_id=None, no_reset=None, method=None):
         """
         Erase (mbed) device
@@ -164,63 +162,69 @@ class Erase(object):
         self.logger.info("Starting erase for given target_id %s", target_id)
         self.logger.info("method used for reset: %s", method)
         available_devices = self.get_available_device_mapping()
-        targets_to_erase = []
 
-        if target_id is not None:
-            if isinstance(target_id, list):
-                for target in target_id:
-                    for device in available_devices:
-                        if target == device['target_id']:
-                            if device not in targets_to_erase:
-                                targets_to_erase.append(device)
-            else:
-                if target_id == 'all':
-                    targets_to_erase = available_devices
-                elif len(target_id) <= 48:
-                    for device in available_devices:
-                        if target_id == device['target_id'] \
-                                or device['target_id'].startswith(target_id):
-                            if device not in targets_to_erase:
-                                targets_to_erase.append(device)
-
-            if len(targets_to_erase) > 0:
-                for item in targets_to_erase:
-                    if item['platform_name'] == 'K64F':
-                        if method == 'simple' \
-                                and 'mount_point' in item and 'serial_port' in item:
-                            self.erase_board(item['mount_point'],
-                                             item['serial_port'],
-                                             no_reset)
-                        elif method == 'pyocd':
-                            try:
-                                from pyOCD.board import MbedBoard
-                                from pyOCD.pyDAPAccess import DAPAccessIntf
-                            except ImportError:
-                                print('pyOCD missing, install it\n')
-                                return EXIT_CODE_PYOCD_MISSING
-                            board = MbedBoard.chooseBoard(board_id=item["target_id"])
-                            self.logger.info("erasing device")
-                            ocd_target = board.target
-                            flash = ocd_target.flash
-                            try:
-                                flash.eraseAll()
-                                if not no_reset:
-                                    ocd_target.reset()
-                            except DAPAccessIntf.TransferFaultError:
-                                pass
-                            self.logger.info("erase completed")
-                        elif method == 'edbg':
-                            print("Not supported yet")
-                        else:
-                            print("Selected method %s not supported" % method)
-                            return EXIT_CODE_NONSUPPORTED_METHOD_FOR_ERASE
-                    else:
-                        print("Only mbed devices supported")
-                        return EXIT_CODE_IMPLEMENTATION_MISSING
-            else:
-                print("Could not map given target_id(s) to available devices")
-                return EXIT_CODE_COULD_NOT_MAP_TO_DEVICE
-
-            return EXIT_CODE_SUCCESS
-        else:
+        if target_id is None:
             return EXIT_CODE_TARGET_ID_MISSING
+
+        targets_to_erase = self.prepare_target_to_erase(target_id, available_devices)
+
+        if len(targets_to_erase) <= 0:
+            print("Could not map given target_id(s) to available devices")
+            return EXIT_CODE_COULD_NOT_MAP_TO_DEVICE
+
+        for item in targets_to_erase:
+            if item['platform_name'] != 'K64F':
+                print("Only mbed devices supported")
+                return EXIT_CODE_IMPLEMENTATION_MISSING
+
+            if method == 'simple' and 'mount_point' in item and 'serial_port' in item:
+                self.erase_board(item['mount_point'], item['serial_port'], no_reset)
+            elif method == 'pyocd':
+                try:
+                    from pyOCD.board import MbedBoard
+                    from pyOCD.pyDAPAccess import DAPAccessIntf
+                except ImportError:
+                    print('pyOCD missing, install it\n')
+                    return EXIT_CODE_PYOCD_MISSING
+                board = MbedBoard.chooseBoard(board_id=item["target_id"])
+                self.logger.info("erasing device")
+                ocd_target = board.target
+                flash = ocd_target.flash
+                try:
+                    flash.eraseAll()
+                    if not no_reset:
+                        ocd_target.reset()
+                except DAPAccessIntf.TransferFaultError:
+                    pass
+                self.logger.info("erase completed")
+            elif method == 'edbg':
+                print("Not supported yet")
+            else:
+                print("Selected method %s not supported" % method)
+                return EXIT_CODE_NONSUPPORTED_METHOD_FOR_ERASE
+
+        return EXIT_CODE_SUCCESS
+
+    @staticmethod
+    def prepare_target_to_erase(target_id, available_devices):
+        """
+        prepare target to erase
+        """
+        targets_to_erase = []
+        if isinstance(target_id, list):
+            for target in target_id:
+                for device in available_devices:
+                    if target == device['target_id']:
+                        if device not in targets_to_erase:
+                            targets_to_erase.append(device)
+        else:
+            if target_id == 'all':
+                targets_to_erase = available_devices
+            elif len(target_id) <= 48:
+                for device in available_devices:
+                    if target_id == device['target_id'] \
+                            or device['target_id'].startswith(target_id):
+                        if device not in targets_to_erase:
+                            targets_to_erase.append(device)
+
+        return targets_to_erase
