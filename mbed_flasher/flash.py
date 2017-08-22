@@ -15,7 +15,6 @@ limitations under the License.
 """
 
 from os.path import isfile
-import platform
 from mbed_flasher.common import Logger
 from mbed_flasher.flashers import AvailableFlashers
 
