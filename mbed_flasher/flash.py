@@ -200,7 +200,7 @@ class Flash(object):
             if ret == 0:
                 self.logger.debug("dev#%i -> SUCCESS", i)
             else:
-                self.logger.warning("dev#%i -> FAIL :(", i)
+                self.logger.warning("dev#%i -> FAIL", i)
             ret_codes += ret
             i += 1
 
