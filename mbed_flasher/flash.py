@@ -242,15 +242,7 @@ class Flash(object):
                                            target_ids_or_prefix=target_id,
                                            no_reset=no_reset)
 
-        if device_mapping_table:
-            if isinstance(device_mapping_table, dict):
-                device_mapping_table = [device_mapping_table]
-            elif not isinstance(device_mapping_table, list):
-                raise SystemError('device_mapping_table wasn\'t list or dictionary')
-        else:
-            device_mapping_table = self.get_available_device_mapping()
-
-        self.logger.debug(device_mapping_table)
+        device_mapping_table = self._refine__device_mapping_table(device_mapping_table)
 
         try:
             if target_id:
@@ -262,11 +254,7 @@ class Flash(object):
             self.logger.error(err)
             return EXIT_CODE_TARGET_ID_COULD_NOT_BE_MAPPED_TO_DEVICE
 
-        if not platform_name:
-            platform_name = target_mbed['platform_name']
-        if platform_name not in self.supported_targets:
-            raise NotImplementedError("Platform '%s' is not supported by mbed-flasher"
-                                      % platform_name)
+        platform_name = self._get_platform_name(platform_name, target_mbed)
 
         self.logger.debug("Flashing: %s", target_mbed["target_id"])
 
@@ -288,6 +276,39 @@ class Flash(object):
         else:
             self.logger.info("flash fails")
         return retcode
+
+    def _refine__device_mapping_table(self, device_mapping_table):
+        """
+        get device mapping table if it's None.
+        refine device_mapping table to be list
+        :param device_mapping_table: individual devices mapping table
+        """
+        if device_mapping_table:
+            if isinstance(device_mapping_table, dict):
+                device_mapping_table = [device_mapping_table]
+            elif not isinstance(device_mapping_table, list):
+                raise SystemError('device_mapping_table wasn\'t list or dictionary')
+        else:
+            device_mapping_table = self.get_available_device_mapping()
+
+        self.logger.debug(device_mapping_table)
+
+        return device_mapping_table
+
+    def _get_platform_name(self, platform_name, target_mbed):
+        """
+        get supported platform name
+        :param platform_name: None or list
+        :param target_mbed: target mbed
+        """
+        if not platform_name:
+            platform_name = target_mbed['platform_name']
+
+        if platform_name not in self.supported_targets:
+            raise NotImplementedError("Platform '%s' is not supported by mbed-flasher"
+                                      % platform_name)
+
+        return platform_name
 
     @staticmethod
     def _map_by_target_id(device_mapping_table, platform_name, target_ids):
