@@ -45,9 +45,8 @@ def verify_output_per_device(serial_port, command, output):
         if out.find(output) != -1:
             ser.close()
             return True
-        else:
-            ser.close()
-            return False
+        ser.close()
+        return False
 
 
 def check_two_binaries_exist():

@@ -59,15 +59,13 @@ class ResetTestCase(unittest.TestCase):
                              'Could not map given target_id(s) to available devices\n')
 
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
-    @mock.patch('sys.stdout', new_callable=StringIO)
-    def test_reset_with_all(self, mock_stdout):
+    def test_reset_with_all(self):
         resetter = Reset()
         ret = resetter.reset(target_id='all', method='simple')
         self.assertEqual(ret, 0)
 
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
-    @mock.patch('sys.stdout', new_callable=StringIO)
-    def test_reset_with_target_id(self, mock_stdout):
+    def test_reset_with_target_id(self):
         mbeds = mbed_lstools.create()
         devices = mbeds.list_mbeds()
         resetter = Reset()
@@ -79,8 +77,7 @@ class ResetTestCase(unittest.TestCase):
         self.assertEqual(ret, 0)
 
     @unittest.skipIf(mbeds.list_mbeds() == [], "no hardware attached")
-    @mock.patch('sys.stdout', new_callable=StringIO)
-    def test_reset_with_target_id_list(self, mock_stdout):
+    def test_reset_with_target_id_list(self):
         mbeds = mbed_lstools.create()
         devices = mbeds.list_mbeds()
         resetter = Reset()

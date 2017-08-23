@@ -22,7 +22,7 @@ class Logger(object):
     """
     def __init__(self, name):
         self.logger = logging.getLogger(name)
-        if len(self.logger.handlers) == 0:
+        if not self.logger.handlers:
             self.logger.addHandler(logging.NullHandler())
             self.logger.setLevel(logging.ERROR)
             self.logger.propagate = False

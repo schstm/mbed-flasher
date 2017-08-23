@@ -316,7 +316,7 @@ class FlasherCLI(object):
         available_platforms, target_ids_to_flash = \
             self.prepare_platforms_and_targets(available, args.tid, available_target_ids)
 
-        if len(target_ids_to_flash) == 0:
+        if not target_ids_to_flash:
             print("Could not find given target_id from attached devices")
             print("Available target_ids:")
             print(available_target_ids)
@@ -449,7 +449,7 @@ class FlasherCLI(object):
         available = flasher.get_available_device_mapping()
         target_ids = []
         available_target_ids = []
-        if len(available) == 0:
+        if not available:
             print("Could not find any connected device")
             return EXIT_CODE_DEVICES_MISSING
         if 'all' in tid:
@@ -463,15 +463,16 @@ class FlasherCLI(object):
                             device['target_id'].startswith(item):
                         if device['target_id'] not in target_ids:
                             target_ids.append(device['target_id'])
-        if len(target_ids) == 0:
+        if not target_ids:
             print("Could not find given target_id from attached devices")
             print("Available target_ids:")
             print(available_target_ids)
             return EXIT_CODE_COULD_NOT_MAP_DEVICE
-        elif len(target_ids) == 1:
+
+        if len(target_ids) == 1:
             return target_ids[0]
-        else:
-            return target_ids
+
+        return target_ids
 
 def mbedflash_main():
     """
