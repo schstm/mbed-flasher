@@ -174,14 +174,16 @@ class FlasherMbed(object):
             return
 
         if 'dev_point' not in new_target:
-            self.logger.error("Target %s is missing /dev/disk/by-id/ point", target['target_id'])
+            self.logger.error("Target %s is missing /dev/disk/by-id/ point",
+                              target['target_id'])
             return -12
 
         for _ in range(10):
             mounts = os.popen('mount |grep vfat').read().splitlines()
             for mount in mounts:
                 if mount.find(new_target['dev_point']) != -1:
-                    new_target['mount_point'] = mount.split('on')[1].split('type')[0].strip()
+                    new_target['mount_point'] = \
+                        mount.split('on')[1].split('type')[0].strip()
                     return
                 sleep(1)
 
@@ -204,11 +206,13 @@ class FlasherMbed(object):
         if platform.system() == 'Darwin':
             return self.get_target(new_target, target)
 
-        return_code = self._check_serial_point_duplicates(target=target, new_target=new_target)
+        return_code = self._check_serial_point_duplicates(target=target,
+                                                          new_target=new_target)
         if return_code:
             return return_code
 
-        return_code = self._check_device_point_duplicates(target=target, new_target=new_target)
+        return_code = self._check_device_point_duplicates(target=target,
+                                                          new_target=new_target)
         if return_code:
             return return_code
 
@@ -257,48 +261,49 @@ class FlasherMbed(object):
         if method == 'pyocd':
             self.logger.debug("pyOCD selected for flashing")
             return self.try_pyocd_flash(source, target)
-        elif method == 'edbg':
+
+        if method == 'edbg':
             self.logger.debug("edbg is not supported for Mbed devices")
             return -13
-        else:
-            try:
-                if 'serial_port' in target and not no_reset:
-                    self.reset_board(target['serial_port'])
-                    sleep(0.1)
 
-                copy_file_success = self.copy_file(source, destination)
-                if copy_file_success == -7:
-                    return -7
+        try:
+            if 'serial_port' in target and not no_reset:
+                self.reset_board(target['serial_port'])
+                sleep(0.1)
 
-                self.logger.debug("copy finished")
-                sleep(4)
+            copy_file_success = self.copy_file(source, destination)
+            if copy_file_success == -7:
+                return -7
 
-                new_target = self.check_points_unchanged(target)
+            self.logger.debug("copy finished")
+            sleep(4)
 
-                if isinstance(new_target, int):
-                    return new_target
+            new_target = self.check_points_unchanged(target)
+
+            if isinstance(new_target, int):
+                return new_target
+
+            thread = Thread(target=self.runner,
+                            args=([target['mount_point'], tail],))
+            thread.start()
+            while thread.is_alive():
+                thread.join(2.5)
+            if not no_reset:
+                if 'serial_port' in new_target:
+                    self.reset_board(new_target['serial_port'])
                 else:
-                    thread = Thread(target=self.runner,
-                                    args=([target['mount_point'], tail],))
-                    thread.start()
-                    while thread.is_alive():
-                        thread.join(2.5)
-                    if not no_reset:
-                        if 'serial_port' in new_target:
-                            self.reset_board(new_target['serial_port'])
-                        else:
-                            self.reset_board(target['serial_port'])
-                        sleep(0.4)
+                    self.reset_board(target['serial_port'])
+                sleep(0.4)
 
-                    # verify flashing went as planned
-                    self.logger.debug("verifying flash")
-                    return self.verify_flash_success(new_target, target, tail)
-            except IOError as err:
-                self.logger.error(err)
-                raise err
-            except OSError as err:
-                self.logger.error("Write failed due to OSError: %s", err)
-                return -14
+            # verify flashing went as planned
+            self.logger.debug("verifying flash")
+            return self.verify_flash_success(new_target, target, tail)
+        except IOError as err:
+            self.logger.error(err)
+            raise err
+        except OSError as err:
+            self.logger.error("Write failed due to OSError: %s", err)
+            return -14
 
     def try_pyocd_flash(self, source, target):
         """
@@ -369,10 +374,10 @@ class FlasherMbed(object):
             return os.open(
                 destination,
                 os.O_CREAT | os.O_TRUNC | os.O_RDWR | os.O_SYNC)
-        else:
-            return os.open(
-                destination,
-                os.O_CREAT | os.O_DIRECT | os.O_TRUNC | os.O_RDWR)
+
+        return os.open(
+            destination,
+            os.O_CREAT | os.O_DIRECT | os.O_TRUNC | os.O_RDWR)
 
     def verify_flash_success(self, new_target, target, tail):
         """
