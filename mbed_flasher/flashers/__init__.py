@@ -16,12 +16,18 @@ limitations under the License.
 """
 
 from mbed_flasher.flashers.FlasherMbed import FlasherMbed
+from mbed_flasher.flashers.FlasherST import FlasherST
 
 # disable Invalid constant name warning, not a const
 # pylint: disable=C0103
 AvailableFlashers = [
     FlasherMbed
 ]
+
+if platform.system() == 'Windows':
+    for ospath in os.environ['PATH'].split(os.pathsep):
+        if ospath.find('STM32 ST-LINK Utility') != -1:
+            AvailableFlashers.append(FlasherST)
 
 '''
 if platform.system() == 'Windows':
