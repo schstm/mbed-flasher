@@ -54,7 +54,7 @@ setup(name='mbed-flasher',
           "console_scripts": ["mbedflash=mbed_flasher:mbedflash_main",],
       },
       install_requires=[
-          "mbed-ls==1.2.16" if "win" in sys.platform else ["mbed-ls==1.2.14"],
+          "mbed-ls==1.3.4"],
           "six",
           "pyserial",
           "pyOCD"
